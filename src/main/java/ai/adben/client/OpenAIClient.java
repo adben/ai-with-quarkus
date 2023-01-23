@@ -64,14 +64,13 @@ public class OpenAIClient {
                 .add("size", imageSize)
                 .build();
 
-        try (Response response = imageGenerationsTarget.request(MediaType.APPLICATION_JSON_TYPE)
+        Response response = imageGenerationsTarget.request(MediaType.APPLICATION_JSON_TYPE)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + secretKey)
-                .post(Entity.json(requestBody))) {
+                .post(Entity.json(requestBody));
 
-            JsonObject jsonObject = response.readEntity(JsonObject.class);
-            LOGGER.info("jsonObject = %s".formatted(jsonObject.toString()));
-            return jsonObject.getJsonArray("data").getJsonObject(0).getString("url");
-        }
+        JsonObject jsonObject = response.readEntity(JsonObject.class);
+        LOGGER.info("jsonObject = %s".formatted(jsonObject.toString()));
+        return jsonObject.getJsonArray("data").getJsonObject(0).getString("url");
 
     }
 
@@ -82,23 +81,21 @@ public class OpenAIClient {
                 .add("max_tokens", textTokens)
                 .build();
 
-        try (Response response = textCompletionsTarget.request(MediaType.APPLICATION_JSON_TYPE)
+        Response response = textCompletionsTarget.request(MediaType.APPLICATION_JSON_TYPE)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + secretKey)
-                .post(Entity.json(requestBody))) {
+                .post(Entity.json(requestBody));
 
-            JsonObject jsonObject = response.readEntity(JsonObject.class);
-            LOGGER.info("jsonObject = %s".formatted(jsonObject.toString()));
+        JsonObject jsonObject = response.readEntity(JsonObject.class);
+        LOGGER.info("jsonObject = %s".formatted(jsonObject.toString()));
 
-            return jsonObject.getJsonArray("choices").getJsonObject(0)
-                    .getString("text");
-        }
-
+        return jsonObject.getJsonArray("choices").getJsonObject(0)
+                .getString("text");
 
     }
 
     @PreDestroy
     void close() {
-        client.close(); ///niet nodig gezien try-with-rest ?
+        client.close();
     }
 
 }
