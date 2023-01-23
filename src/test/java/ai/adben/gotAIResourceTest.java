@@ -15,7 +15,7 @@ public class gotAIResourceTest {
                 .when().get("/ai")
                 .then()
                 .statusCode(200)
-                .body(is("Hello from RESTEasy Reactive"));
+                .body(is("Hello from AI Reactive client"));
     }
 
 }
