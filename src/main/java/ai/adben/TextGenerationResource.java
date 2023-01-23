@@ -15,7 +15,7 @@ public class TextGenerationResource {
 
     @GET
     public String text() {
-        return openAIClient.generateText("Provide me 3 ideas for side projects on Quarkus, that uses full capabilities of reactive APIs");
+        return openAIClient.generateText("Provide me 3 ideas for side projects on Quarkus, that uses full capabilities of Quarkus reactive APIs");
     }
 
 }

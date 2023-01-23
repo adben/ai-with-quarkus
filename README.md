@@ -5,6 +5,38 @@ with [OpenAI API](https://beta.openai.com/docs/models/finding-the-right-model)
 
 If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
 
+## API build & deployment op Openshift Sandbox
+
+Zorg dat je ingelogd bent op OpenShift. Gebruik bijv. `Copy login command` in de OpenShift (sandbox) web interface.
+
+```shell script
+mvn clean install -Dquarkus.kubernetes-client.master-url=xxxxx -Dquarkus.kubernetes-client.token=xxxxx
+```
+
+```shell script
+mvn install -Dquarkus.kubernetes.deploy=true
+```
+
+```shell script
+oc get is
+```
+
+```shell script
+oc get pods
+```
+
+```shell script
+oc get svc
+```
+
+Maak een `edge` route.
+Dit zorgt ervoor dat de service via HTTPS ge-exposed wordt, zonder dat we zelf HTTPS setup moeten doen.
+
+```shell script
+oc create route edge --service=ai-with-quarkus
+
+```
+
 ## Running the application in dev mode
 
 You can run your application in dev mode that enables live coding using:
@@ -50,7 +82,7 @@ Or, if you don't have GraalVM installed, you can run the native executable build
 ./mvnw package -Pnative -Dquarkus.native.container-build=true
 ```
 
-You can then execute your native executable with: `./target/code-with-quarkus-1.0.0-SNAPSHOT-runner`
+You can then execute your native executable with: `./target/ai-with-quarkus-1.0.0-SNAPSHOT-runner`
 
 If you want to learn more about building native executables, please consult https://quarkus.io/guides/maven-tooling.
 
