@@ -11,9 +11,11 @@ public class TextGenerationResourceTest {
     @Test
     public void testHelloEndpoint() {
         given()
-                .when().get("/texts")
+                .body("Provide me 3 ideas for side projects on Quarkus")
+                .when()
+                .post("/texts")
                 .then()
-                .statusCode(500);
+                .statusCode(200);
     }
 
 }
