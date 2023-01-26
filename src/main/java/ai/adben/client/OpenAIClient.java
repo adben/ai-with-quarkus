@@ -1,30 +1,22 @@
 package ai.adben.client;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
+import io.smallrye.mutiny.Uni;
+import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.json.JsonObject;
+import io.vertx.mutiny.core.Vertx;
+import io.vertx.mutiny.core.buffer.Buffer;
+import io.vertx.mutiny.ext.web.client.HttpRequest;
+import io.vertx.mutiny.ext.web.client.WebClient;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jboss.logging.Logger;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.ws.rs.core.MediaType;
 
 @ApplicationScoped
 public class OpenAIClient {
 
-    private Client client;
-    private WebTarget textCompletionsTarget;
-    private WebTarget imageGenerationsTarget;
-
-    private static final Logger LOGGER = Logger.getLogger(OpenAIClient.class.getName());
+    private final WebClient client;
 
     @Inject
     @ConfigProperty(name = "openai.secret-key")
@@ -50,52 +42,45 @@ public class OpenAIClient {
     @ConfigProperty(name = "openai.image.size")
     String imageSize;
 
-    @PostConstruct
-    void initClient() {
-        client = ClientBuilder.newClient();
-        textCompletionsTarget = client.target(textCompletions);
-        imageGenerationsTarget = client.target(imageGenerations);
+    @Inject
+    public OpenAIClient(Vertx vertx) {
+        this.client = WebClient.create(vertx);
     }
 
-    public String generateImage(String prompt) {
-        JsonObject requestBody = Json.createObjectBuilder()
-                .add("prompt", prompt)
-                .add("n", 1)
-                .add("size", imageSize)
-                .build();
-
-        Response response = imageGenerationsTarget.request(MediaType.APPLICATION_JSON_TYPE)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + secretKey)
-                .post(Entity.json(requestBody));
-
-        JsonObject jsonObject = response.readEntity(JsonObject.class);
-        LOGGER.info("jsonObject = %s".formatted(jsonObject.toString()));
-        return jsonObject.getJsonArray("data").getJsonObject(0).getString("url");
+    public Uni<JsonObject> generateImage(String prompt) {
+        return client.post(imageGenerations)
+                .putHeader(HttpHeaders.AUTHORIZATION.toString(), "Bearer " + secretKey)
+                .sendJsonObject(JsonObject.of("prompt", prompt, "n", 1, "size", imageSize))
+                .onItem().transform(resp -> {
+                    if (resp.statusCode() == 200) {
+                        return resp.bodyAsJsonObject();
+                    } else {
+                        return new JsonObject()
+                                .put("code", resp.statusCode())
+                                .put("message", resp.bodyAsString());
+                    }
+                });
 
     }
 
-    public String generateText(String prompt) {
-        JsonObject requestBody = Json.createObjectBuilder()
-                .add("model", textModel)
-                .add("prompt", prompt)
-                .add("max_tokens", textTokens)
-                .build();
+    public Uni<JsonObject> generateText(String prompt) {
+        HttpRequest<Buffer> request = client.post(textCompletions);
 
-        Response response = textCompletionsTarget.request(MediaType.APPLICATION_JSON_TYPE)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + secretKey)
-                .post(Entity.json(requestBody));
+        final JsonObject jsonObject = JsonObject.of("model", textModel, "prompt", prompt, "max_tokens", textTokens);
 
-        JsonObject jsonObject = response.readEntity(JsonObject.class);
-        LOGGER.info("jsonObject = %s".formatted(jsonObject.toString()));
-
-        return jsonObject.getJsonArray("choices").getJsonObject(0)
-                .getString("text");
-
-    }
-
-    @PreDestroy
-    void close() {
-        client.close();
+        return request
+                .putHeader("content-type", MediaType.APPLICATION_JSON_TYPE.toString())
+                .putHeader(HttpHeaders.AUTHORIZATION.toString(), "Bearer " + secretKey)
+                .sendJsonObject(jsonObject)
+                .onItem().transform(resp -> {
+                    if (resp.statusCode() == 200) {
+                        return resp.bodyAsJsonObject();
+                    } else {
+                        return new JsonObject()
+                                .put("code", resp.statusCode())
+                                .put("message", resp.bodyAsString());
+                    }
+                });
     }
 
 }

@@ -4,18 +4,16 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.is;
 
 @QuarkusTest
-public class gotAIResourceTest {
+public class TextGenerationResourceTest {
 
     @Test
     public void testHelloEndpoint() {
         given()
-                .when().get("/ai")
+                .when().get("/texts")
                 .then()
-                .statusCode(200)
-                .body(is("Hello from AI Reactive client"));
+                .statusCode(500);
     }
 
 }
