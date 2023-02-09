@@ -10,7 +10,7 @@ If you want to learn more about Quarkus, please visit its website: https://quark
 Zorg dat je ingelogd bent op OpenShift. Gebruik bijv. `Copy login command` in de OpenShift (sandbox) web interface.
 
 ```shell script
-mvn clean install -Dquarkus.kubernetes-client.master-url=https://api.sandbox-m2.ll9k.p1.openshiftapps.com:6443 -Dquarkus.kubernetes-client.token=sha256~g5qgzikzoDuFIshZ4ejCKRJNHsdXXm5ygwAoicyxsVU 
+mvn clean install -Dquarkus.kubernetes-client.master-url=https://xxx:6443 -Dquarkus.kubernetes-client.token=sha256~xxx
 ```
 
 ```shell script
