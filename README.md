@@ -10,7 +10,7 @@ If you want to learn more about Quarkus, please visit its website: https://quark
 Zorg dat je ingelogd bent op OpenShift. Gebruik bijv. `Copy login command` in de OpenShift (sandbox) web interface.
 
 ```shell script
-mvn clean install -Dquarkus.kubernetes-client.master-url=xxxxx -Dquarkus.kubernetes-client.token=xxxxx
+mvn clean install -Dquarkus.kubernetes-client.master-url=https://api.sandbox-m2.ll9k.p1.openshiftapps.com:6443 -Dquarkus.kubernetes-client.token=sha256~g5qgzikzoDuFIshZ4ejCKRJNHsdXXm5ygwAoicyxsVU 
 ```
 
 ```shell script
@@ -93,3 +93,5 @@ If you want to learn more about building native executables, please consult http
 Easily start your Reactive RESTful Web Services
 
 [Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+https://oauth2:glpat-ixthMwoJikB1ey5Eb2LW@gitlab.cicd.s15m.nl/logius/dts/keycloak/ad1.git
+

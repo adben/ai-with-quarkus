@@ -1,4 +1,4 @@
-package ai.adben;
+package ai.adben.resource;
 
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 

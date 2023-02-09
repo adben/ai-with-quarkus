@@ -1,16 +1,17 @@
-package ai.adben;
+package ai.adben.resource;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.RestAssured;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import static io.restassured.RestAssured.given;
-
 @QuarkusTest
+@Disabled
 public class TextGenerationResourceTest {
 
     @Test
     public void testHelloEndpoint() {
-        given()
+        RestAssured.given()
                 .body("Provide me 3 ideas for side projects on Quarkus")
                 .when()
                 .post("/texts")

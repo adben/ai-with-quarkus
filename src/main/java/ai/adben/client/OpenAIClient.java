@@ -1,86 +1,58 @@
 package ai.adben.client;
 
+import com.theokanning.openai.OpenAiService;
+import com.theokanning.openai.edit.EditRequest;
+import com.theokanning.openai.edit.EditResult;
 import io.smallrye.mutiny.Uni;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
-import io.vertx.mutiny.core.Vertx;
-import io.vertx.mutiny.core.buffer.Buffer;
-import io.vertx.mutiny.ext.web.client.HttpRequest;
-import io.vertx.mutiny.ext.web.client.WebClient;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.ws.rs.core.MediaType;
 
 @ApplicationScoped
 public class OpenAIClient {
 
-    private final WebClient client;
+    private static final Logger LOG = Logger.getLogger(OpenAIClient.class);
+
+    //TODO private final List<Model> models;
+
 
     @Inject
     @ConfigProperty(name = "openai.secret-key")
     String secretKey;
 
     @Inject
-    @ConfigProperty(name = "openai.text.completion.url")
-    String textCompletions;
+    @ConfigProperty(name = "openai.text.instruction.default")
+    String defaultTextInstruction;
 
     @Inject
-    @ConfigProperty(name = "openai.text.model")
-    String textModel;
+    @ConfigProperty(name = "openai.text.model.default")
+    String defaultModel;
 
     @Inject
-    @ConfigProperty(name = "openai.text.tokens")
-    int textTokens;
-
-    @Inject
-    @ConfigProperty(name = "openai.image.generations.url")
-    String imageGenerations;
-
-    @Inject
-    @ConfigProperty(name = "openai.image.size")
+    @ConfigProperty(name = "openai.image.size.default")
     String imageSize;
 
-    @Inject
-    public OpenAIClient(Vertx vertx) {
-        this.client = WebClient.create(vertx);
-    }
-
     public Uni<JsonObject> generateImage(String prompt) {
-        return client.post(imageGenerations)
-                .putHeader(HttpHeaders.AUTHORIZATION.toString(), "Bearer " + secretKey)
-                .sendJsonObject(JsonObject.of("prompt", prompt, "n", 1, "size", imageSize))
-                .onItem().transform(resp -> {
-                    if (resp.statusCode() == 200) {
-                        return resp.bodyAsJsonObject();
-                    } else {
-                        return new JsonObject()
-                                .put("code", resp.statusCode())
-                                .put("message", resp.bodyAsString());
-                    }
-                });
-
+        return null;
     }
 
-    public Uni<JsonObject> generateText(String prompt) {
-        HttpRequest<Buffer> request = client.post(textCompletions);
+    public EditResult generateText(String input, String instruction) {
+        final OpenAiService service = new OpenAiService(secretKey);
+        EditResult result = service.createEdit(EditRequest.builder()
+                .model(defaultModel)
+                .input(input)
+                .instruction(instruction)
+                .build());
 
-        final JsonObject jsonObject = JsonObject.of("model", textModel, "prompt", prompt, "max_tokens", textTokens);
+        LOG.info("Got response" + result);
 
-        return request
-                .putHeader("content-type", MediaType.APPLICATION_JSON_TYPE.toString())
-                .putHeader(HttpHeaders.AUTHORIZATION.toString(), "Bearer " + secretKey)
-                .sendJsonObject(jsonObject)
-                .onItem().transform(resp -> {
-                    if (resp.statusCode() == 200) {
-                        return resp.bodyAsJsonObject();
-                    } else {
-                        return new JsonObject()
-                                .put("code", resp.statusCode())
-                                .put("message", resp.bodyAsString());
-                    }
-                });
+        return result;
     }
 
+    public EditResult generateText(String input) {
+        return this.generateText(input, defaultTextInstruction);
+    }
 }
